@@ -1,0 +1,12 @@
+---
+- name: This playbook create a file or directory using ansible
+  hosts: all 
+ # become: true
+  gather_facts: no 
+  tasks:
+  
+  - name: create a directory
+    file: 
+      path: /home/eechukwu/dir1
+      state: directory
+       

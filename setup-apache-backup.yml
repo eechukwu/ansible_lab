@@ -1,0 +1,72 @@
+---
+- name: this playbook install apache2 or httpd depending on system
+  hosts: all
+  become: true 
+  vars: 
+     ports: 8082
+  tasks:
+  
+  - name: install apache2
+    apt:
+      name: apache2
+      state: present
+    when: ansible_os_family == "Debian"
+    notify: start apache2 ubuntu
+
+
+  - name: install httpd
+    yum:
+      name: httpd
+      state: present
+    when: ansible_os_family == "RedHat"
+    tags: install_apache
+    ignore_errors: yes
+    notify: start apache 
+   
+  - name: copy index.html file
+    copy: 
+      src: /opt/ansible/index.html
+      dest: /var/www/html
+      mode: 0666
+  
+  - name: Ensure  apache is running on {{ ports }}
+    lineinfile:
+       path: /etc/httpd/conf/httpd.conf
+       regexp: '^Listen '
+       insertafter: '^#Listen '
+       line: Listen {{ ports }}
+    when: ansible_os_family == "RedHat"
+    notify: restart apache
+ 
+  - name: Ensure  apache is running on {{ ports }} on ubuntu
+    lineinfile:
+       path: /etc/apache2/ports.conf
+       regexp: '^Listen '
+       insertafter: "# /etc/apache2/sites-enabled/000-default.conf"
+       line: Listen {{ ports }}
+    when: ansible_os_family == "Debian" 
+    notify: restart apache2 service on ubuntu
+
+  handlers:
+  - name: start apache
+    service:
+      name: httpd
+      state: started
+  
+  - name: start apache2 ubuntu
+    service:
+      name: apache2
+      state: started
+   
+
+  - name: restart apache 
+    service:
+      name: httpd
+      state: started
+   
+
+  - name: restart apache2 service on ubuntu
+    service:
+      name: apache2
+      state: started
+  

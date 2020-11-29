@@ -1,0 +1,3 @@
+---
+# vars file for setup-apache
+ports: 8082
